@@ -2,7 +2,7 @@
 Application Library
 author: Predrag Nikolic github/pdjan
 date: nov 2019
-version 0.1.3
+version 0.1.4
 python: 3.7.4
 '''
 
@@ -47,7 +47,12 @@ class Library:
         self.tree.heading("one", text='Author', anchor=N)
         self.tree.heading("two", text='Title', anchor=N)
         self.tree.heading("tree", text='Pages', anchor=N)
-        self.tree.heading("four", text='Date', anchor=N)        
+        self.tree.heading("four", text='Date', anchor=N)
+
+        self.msg=Label(text='*', fg='red')
+        self.msg.grid(row=21, column=1)
+
+        self.update_list()
 
     def add_book_dialog(self):
         '''
@@ -98,8 +103,46 @@ class Library:
         pass
     
     def add_book(self,a,b,c,d):
-        print("book added.")
-        pass
+        '''
+        Function adds book to database
+        '''
+        a1 = a.get()
+        b1 = b.get()
+        c1 = c.get()
+        d1 = d.get()
+
+        conn = sqlite3.connect('data.db')
+        c = conn.cursor()
+        c.execute("INSERT INTO t(Author,Title,Pages,Date) VALUES (?,?,?,?)", (a1,b1,c1,d1))
+
+        conn.commit()                  
+        c.close()
+        self.tl.destroy()
+
+        self.msg["text"] = "Book added."
+        
+        self.update_list()
+
+    def update_list(self):
+        '''
+        Updates book list from database into treeview 
+        '''
+        
+        # delete current items
+        x = self.tree.get_children()
+        for item in x:
+            self.tree.delete(item)
+
+        # read new data
+        conn = sqlite3.connect('data.db')
+        c = conn.cursor()
+        lst = c.execute("SELECT * FROM t ORDER BY Date(Date) desc")
+
+        for row in lst:
+            self.tree.insert("", END, text="", values=(row[0], row[1], row[2], row[3]))
+        conn.commit()    
+        c.close()
+
     
 root = Tk()
 root.title("Library")
