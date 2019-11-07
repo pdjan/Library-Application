@@ -3,6 +3,9 @@ Simple Python application for storing books data
 
 CHANGES
 
+v0.1.4
+Add book and update list functions
+
 v0.1.3
 Add book dialog function added. 
 
