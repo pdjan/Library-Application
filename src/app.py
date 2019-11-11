@@ -2,9 +2,11 @@
 Application Library
 author: Predrag Nikolic github/pdjan
 date: nov 2019
-version 0.1.4
+version 0.1.5
 python: 3.7.4
 '''
+
+# frames and scrollbar added
 
 from tkinter import *
 from tkinter import ttk
@@ -31,14 +33,25 @@ class Library:
 
         # UI setup
 
-        self.addbtn = ttk.Button(text="New book", width=15, command=self.add_book_dialog)
+        leftFrame = Frame(width=150, height=600)
+        leftFrame.grid(row=0, column=0, padx=10, pady=5, sticky=N)       
+
+        self.addbtn = ttk.Button(leftFrame, text="New book", width=15, command=self.add_book_dialog)
         self.addbtn.grid(row=0, column=0, sticky=W+N)
 
-        self.modbtn = ttk.Button(text="Edit book", width=15, command=self.edit_book_dialog)
+        self.modbtn = ttk.Button(leftFrame, text="Edit book", width=15, command=self.edit_book_dialog)
         self.modbtn.grid(row=1, column=0, sticky=W+N)
 
-        self.tree = ttk.Treeview(show="headings", height=20, column=4, selectmode="browse")
+        rightFrame = Frame(width=150, height=600)
+        rightFrame.grid(row=0, column=1, padx=0, pady=5)                
+
+        self.tree = ttk.Treeview(rightFrame, show="headings", height=20, column=4, selectmode="browse")
         self.tree.grid(row=0, column=1, rowspan=20, sticky=N)
+
+        self.vsb = ttk.Scrollbar(rightFrame, orient="vertical", command=self.tree.yview)
+        self.vsb.grid(row=0, column=2, sticky=N+S+E+W, rowspan=20)
+        self.tree.configure(yscrollcommand=self.vsb.set)
+        
         self.tree["columns"]=("one","two","tree","four")
         self.tree.column("one", width=140)
         self.tree.column("two", width=240)
