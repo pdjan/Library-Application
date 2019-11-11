@@ -2,11 +2,11 @@
 Application Library
 author: Predrag Nikolic github/pdjan
 date: nov 2019
-version 0.1.5
+version 0.1.6
 python: 3.7.4
 '''
 
-# frames and scrollbar added
+# windows management function
 
 from tkinter import *
 from tkinter import ttk
@@ -65,6 +65,8 @@ class Library:
         self.msg=Label(text='*', fg='red')
         self.msg.grid(row=21, column=1)
 
+        self.context_open = False
+
         self.update_list()
 
     def add_book_dialog(self):
@@ -72,7 +74,11 @@ class Library:
         Add new book dialog box
         '''
         try:
+            self.msg["text"] = ""
             self.tl = Tk()
+            self.tl.title("Add book")
+            self.tl.resizable(False, False)
+            
             # window position
             x=root.winfo_rootx()+150
             y=root.winfo_rooty()+50
@@ -103,13 +109,16 @@ class Library:
             ne4.insert(0,"")            
 
             # Button calls function for executing sql command      
-            upbtn = Button(self.tl, text= 'Add new book', command=lambda:self.add_book(ne1,ne2,ne3,ne4))
-            upbtn.grid(row=5, column=0, sticky=W)            
+            upbtn = Button(self.tl, bg="grey", fg="white", text= 'Add new book', command=lambda:self.add_book(ne1,ne2,ne3,ne4))
+            upbtn.grid(row=5, column=0, sticky=W, pady=10, padx=10)
+
+            self.config()
+            self.tl.protocol("WM_DELETE_WINDOW", self.config)
                                     
             self.tl.mainloop()
 
         except IndexError as e:
-            pass
+            self.msg["text"] = "Error while adding a book"
 
 
     def edit_book_dialog(self):
@@ -155,6 +164,25 @@ class Library:
             self.tree.insert("", END, text="", values=(row[0], row[1], row[2], row[3]))
         conn.commit()    
         c.close()
+
+    def config(self):
+        '''
+        Windows management function
+        '''
+        if self.context_open:
+            self.addbtn.config(state=NORMAL)
+            self.modbtn.config(state=NORMAL)
+            self.tree.config(selectmode="browse")
+            self.tl.destroy()
+            # restore root close button function
+            root.protocol('WM_DELETE_WINDOW', root.destroy)
+        else:
+            # ignore root close button
+            root.protocol('WM_DELETE_WINDOW', lambda:0)
+            self.addbtn.config(state=DISABLED)
+            self.modbtn.config(state=DISABLED)
+            self.tree.config(selectmode="none")
+        self.context_open = not self.context_open        
 
     
 root = Tk()
