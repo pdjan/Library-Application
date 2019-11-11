@@ -3,6 +3,9 @@ Simple Python application for storing books data
 
 CHANGES
 
+v0.1.5
+Frames and scrollbar added
+
 v0.1.4
 Add book and update list functions
 
