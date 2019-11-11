@@ -3,6 +3,9 @@ Simple Python application for storing books data
 
 CHANGES
 
+v0.1.6
+Windows management function, minor tweaks
+
 v0.1.5
 Frames and scrollbar added
 
