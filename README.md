@@ -3,6 +3,9 @@ Simple Python application for storing books data
 
 CHANGES
 
+v0.1.7
+Edit book dialog added
+
 v0.1.6
 Windows management function, minor tweaks
 
