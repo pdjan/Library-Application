@@ -2,11 +2,10 @@
 Application Library
 author: Predrag Nikolic github/pdjan
 date: nov 2019
-version 0.1.6
+version 0.1.7
 python: 3.7.4
 '''
-
-# windows management function
+# edit book dialog added
 
 from tkinter import *
 from tkinter import ttk
@@ -122,7 +121,63 @@ class Library:
 
 
     def edit_book_dialog(self):
-        pass
+        try:
+            self.msg["text"] = " "
+            conn = sqlite3.connect('data.db')
+            c = conn.cursor()
+            name = self.tree.item(self.tree.selection()[0])['values'][1]
+            
+            query = "SELECT * FROM t WHERE Title = '%s';" %name
+            db_data = c.execute(query)
+
+            for item in db_data:
+                _author = item[0]
+                _title = item[1]
+                _pages = item[2]
+                _date = item[3]
+                
+            self.tl = Tk()
+            self.tl.title("Edit details")
+            x = root.winfo_rootx()+120
+            y = root.winfo_rooty()+50
+            self.tl.geometry('%dx%d+%d+%d' % (380, 155, x, y))
+            self.tl.resizable(False, False)
+
+            Label(self.tl,text='Author: ').grid(row=0, column=0, sticky=E+W)
+            new_author = Entry(self.tl, width=30)
+            new_author.grid(row=0, column=1, sticky=W, padx=10)
+            new_author.insert(0,_author)
+
+            Label(self.tl, text='Title: ').grid(row=1, column=0,sticky=E+W)
+            new_title = Entry(self.tl, width=30)
+            new_title.grid(row=1, column=1, sticky=W, padx=10)
+            new_title.insert(0,_title)
+
+            Label(self.tl, text='Pages:').grid(row=2, column=0,sticky=E+W)
+            new_pages = Entry(self.tl, width=30)
+            new_pages.grid(row=2, column=1, sticky=W, padx=10)
+            new_pages.insert(0,_pages)
+
+            Label(self.tl, text='Date:').grid(row=3, column=0,sticky=E+W)
+            new_date = Entry(self.tl, width=30)
+            new_date.grid(row=3, column=1, sticky=W, padx=10)
+            new_date.insert(0,_date)
+                                        
+            upbtn = Button(self.tl, bg="grey", fg="white", text='Enter details',
+                           command=lambda:self.enter_changes(new_author,new_title,new_pages,new_date,name))
+            upbtn.grid(row=4, column=0, sticky=W, padx=10, pady=10)
+
+            conn.commit()
+            c.close()
+            
+            self.config()
+            self.tl.protocol("WM_DELETE_WINDOW", self.config)
+
+            self.tl.mainloop()
+            
+        except IndexError as e:
+            self.msg["text"] = "Select book to edit"
+			
     
     def add_book(self,a,b,c,d):
         '''
@@ -144,6 +199,13 @@ class Library:
         self.msg["text"] = "Book added."
         
         self.update_list()
+		
+    def enter_changes(self,new_author,new_title,new_pages,new_date,name):
+        '''
+        Enter changes to database function
+        '''
+        self.config()
+        pass 
 
     def update_list(self):
         '''
