@@ -1,11 +1,11 @@
 '''
 Application Library
 author: Predrag Nikolic github/pdjan
-date: nov 2019
-version 0.1.7
+date: May 2020
+version 1.0
 python: 3.7.4
 '''
-# edit book dialog added
+# 
 
 from tkinter import *
 from tkinter import ttk
@@ -167,6 +167,9 @@ class Library:
                            command=lambda:self.enter_changes(new_author,new_title,new_pages,new_date,name))
             upbtn.grid(row=4, column=0, sticky=W, padx=10, pady=10)
 
+            dbtn = Button(self.tl, bg="grey", fg="white", text="Delete book", command=lambda:self.delete_book(name))
+            dbtn.grid(row=4, column=1, sticky=W, padx=10, pady=10)
+
             conn.commit()
             c.close()
             
@@ -194,18 +197,48 @@ class Library:
 
         conn.commit()                  
         c.close()
-        self.tl.destroy()
 
         self.msg["text"] = "Book added."
         
+        self.config()
         self.update_list()
 		
     def enter_changes(self,new_author,new_title,new_pages,new_date,name):
         '''
         Enter changes to database function
         '''
+        inAuthor = new_author.get()
+        inTitle = new_title.get()
+        inPages = new_pages.get()
+        inDate = new_date.get()
+        inName = name
+
+        conn = sqlite3.connect('data.db')
+        c = conn.cursor()
+        c.execute('UPDATE t SET Author=(?), Title=(?), Pages=(?), Date=(?) WHERE Title=(?) AND Author=(?)',
+                  (inAuthor,inTitle,inPages,inDate,inName,inAuthor))
+        conn.commit()
+        c.close()
+        self.msg['text'] = "Data for '%s' is changed" %name
         self.config()
-        pass 
+        self.update_list()
+
+    def delete_book(self, name):
+        '''
+        Deletes chosen book from database and list
+        '''
+        dName = name
+        conn = sqlite3.connect('data.db')
+        c = conn.cursor()
+        sql_query = """DELETE from t WHERE Title=(?)"""
+        # note: if there are 2 books with same title, both will be deleted
+        # solution is to check by title and another parameter
+        c.execute(sql_query, (dName,))
+        conn.commit()
+        c.close()
+        self.msg["text"] = "Book is deleted"
+        self.config()
+        self.update_list()
 
     def update_list(self):
         '''
