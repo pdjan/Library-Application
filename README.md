@@ -3,6 +3,9 @@ Simple Python application for storing books data
 
 CHANGES
 
+v1.1
+ttkthemes theme applied
+
 v1.0
 Enter changes and Delete book functions added
 
