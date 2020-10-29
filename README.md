@@ -1,7 +1,12 @@
 # Library-Application
 Simple Python application for storing books data
 
+![image](https://raw.githubusercontent.com/pdjan/Library-Application/master/LibraryApp.jpg)
+
 CHANGES
+
+v1.2
+Top 10 authors function added
 
 v1.1
 ttkthemes theme applied
