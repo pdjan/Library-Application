@@ -1,11 +1,10 @@
 '''
 Application Library
-author: Predrag Nikolic github/pdjan
-date: June 2020
-version 1.1
+author: https://github.com/pdjan
+version 1.2
 python: 3.7.4
 '''
-# theme applied
+# new to 1.2 - top 10 stats
 
 from tkinter import *
 from tkinter import ttk
@@ -41,6 +40,12 @@ class Library:
 
         self.modbtn = ttk.Button(leftFrame, text="Edit book", width=15, command=self.edit_book_dialog)
         self.modbtn.grid(row=1, column=0, sticky=W+N)
+
+        self.stats = Label(leftFrame, text='Stats', fg='blue')
+        self.stats.grid(row=2, column=0)
+
+        self.topBtn = ttk.Button(leftFrame, text='Top 10', width=15, command=self.show_top10)
+        self.topBtn.grid(row=3, column=0)
 
         rightFrame = Frame(width=150, height=600)
         rightFrame.grid(row=0, column=1, padx=0, pady=5)                
@@ -113,7 +118,6 @@ class Library:
             ne4.insert(0,"")            
 
             # Button calls function for executing sql command      
-            # upbtn = Button(self.tl, bg="grey", fg="white", text= 'Add new book', command=lambda:self.add_book(ne1,ne2,ne3,ne4))
             upbtn = ttk.Button(self.tl, text= 'Add new book', command=lambda:self.add_book(ne1,ne2,ne3,ne4))
             upbtn.grid(row=5, column=0, sticky=W, pady=10, padx=10)
 
@@ -174,12 +178,9 @@ class Library:
             new_date.grid(row=3, column=1, sticky=W, padx=10)
             new_date.insert(0,_date)
                                         
-            #upbtn = Button(self.tl, bg="grey", fg="white", text='Enter details',
-            #               command=lambda:self.enter_changes(new_author,new_title,new_pages,new_date,name))
             upbtn = ttk.Button(self.tl, text='Enter details', command=lambda:self.enter_changes(new_author,new_title,new_pages,new_date,name))
             upbtn.grid(row=4, column=0, sticky=W, padx=10, pady=10)
 
-            # dbtn = Button(self.tl, bg="grey", fg="white", text="Delete book", command=lambda:self.delete_book(name))
             dbtn = ttk.Button(self.tl, text="Delete book", command=lambda:self.delete_book(name))
             dbtn.grid(row=4, column=1, sticky=W, padx=10, pady=10)
 
@@ -272,6 +273,51 @@ class Library:
             self.tree.insert("", END, text="", values=(row[0], row[1], row[2], row[3]))
         conn.commit()    
         c.close()
+
+    def show_top10(self):
+        '''
+        This function opens window and displays top 10 authors from database
+        '''
+        try:
+            conn = sqlite3.connect('data.db')
+            c = conn.cursor()            
+            query = "SELECT Author, COUNT(*) AS Num FROM t GROUP BY Author HAVING COUNT(*)>0 ORDER BY Num DESC LIMIT 10;"
+            data = c.execute(query)
+
+            self.tl = Tk()
+            x = root.winfo_rootx()+120
+            y = root.winfo_rooty()+20
+            self.tl.geometry('%dx%d+%d+%d' % (235, 265, x, y))
+            self.tl.resizable(False, False)
+            self.tl.title("Top 10")
+
+            Label(self.tl,text='Top 10 authors', font = "Verdana 8 bold").grid(row=0, pady=8)
+
+            self.toptree = ttk.Treeview(self.tl, show="headings", height=10, columns=2, selectmode='none')
+            self.toptree.grid(row=1, column=0, rowspan=10, sticky=N, padx=2)
+            
+            self.toptree["columns"]=("one","two")
+            self.toptree.column("one", width=200)
+            self.toptree.column("two", width=30, anchor="center")
+            self.toptree.heading("one", text='Author', anchor=N)
+            self.toptree.heading("two", text='#', anchor=N)
+
+            # get data into treeview
+            
+            for row in data:
+                self.toptree.insert("", END, text="", values=(row[0], row[1]))
+
+            conn.commit()
+            c.close()
+            self.config()
+            self.tl.protocol("WM_DELETE_WINDOW", self.config)
+            self.tl.mainloop()
+
+            
+        except IndexError as e:
+            self.msg["text"] = "Error"
+
+
 
     def config(self):
         '''
