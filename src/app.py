@@ -1,10 +1,10 @@
 '''
 Application Library
 author: https://github.com/pdjan
-version 1.2
+version 1.3
 python: 3.7.4
 '''
-# new to 1.2 - top 10 stats
+# new to 1.3 - books by year
 
 from tkinter import *
 from tkinter import ttk
@@ -46,7 +46,11 @@ class Library:
 
         self.topBtn = ttk.Button(leftFrame, text='Top 10', width=15, command=self.show_top10)
         self.topBtn.grid(row=3, column=0)
-
+        
+        # new 1.3
+        self.yBtn = ttk.Button(leftFrame, text="By Year", width=15, command = self.show_by_year)
+        self.yBtn.grid(row=4, column=0, sticky=W+N)
+        
         rightFrame = Frame(width=150, height=600)
         rightFrame.grid(row=0, column=1, padx=0, pady=5)                
 
@@ -317,7 +321,60 @@ class Library:
         except IndexError as e:
             self.msg["text"] = "Error"
 
+    # new 1.3
+    def show_by_year(self):
+        '''
+        This function opens window and displays books by year
+        '''
+        try:
+            conn = sqlite3.connect('data.db')
+            c = conn.cursor()            
+            query = "SELECT strftime('%Y', date(Date)) as 'year', SUM(Pages), COUNT(*) FROM t GROUP BY year ORDER BY year DESC"
+            data = c.execute(query)
+                        
+            # display results in new window
+            
+            self.tl = Tk()
+            x = root.winfo_rootx()+120
+            y = root.winfo_rooty()
+            self.tl.geometry('%dx%d+%d+%d' % (230, 230, x, y))
+            self.tl.resizable(False, False)
+            self.tl.title("stats")
 
+            self.ytree = ttk.Treeview(self.tl, show="headings", height=10, columns=3, selectmode='none')
+            self.ytree.grid(row=1, column=0, rowspan=10, sticky=N, padx=2)
+
+            self.ytree["columns"]=("one","two","three")
+            self.ytree.column("one", width=100, anchor="center")
+            self.ytree.column("two", width=50, anchor="center")
+            self.ytree.column("three", width=50, anchor="center")
+            self.ytree.heading("one", text='Year', anchor=N)
+            self.ytree.heading("two", text='Pages', anchor=N)
+            self.ytree.heading("three", text='#', anchor=N)
+
+            # insert data into treeview
+
+            for book in data:
+                # print(book)
+                self.ytree.insert("", END, text="", values=(book[0], str(book[1]), str(book[2])))
+            
+            # add scrollbar
+
+            self.ysb = ttk.Scrollbar(self.tl, orient="vertical", command=self.ytree.yview)
+            self.ysb.grid(row=0, column=1, sticky=N+S+E+W, rowspan=12)
+            self.ytree.configure(yscrollcommand=self.ysb.set)        
+            
+            conn.commit()
+            c.close()
+            self.config()
+            self.tl.protocol("WM_DELETE_WINDOW", self.config)
+            self.tl.mainloop()
+
+            
+        except IndexError as e:
+            self.msg["text"] = "Unknown Error occured!"
+        
+    
 
     def config(self):
         '''
@@ -326,6 +383,8 @@ class Library:
         if self.context_open:
             self.addbtn.config(state=NORMAL)
             self.modbtn.config(state=NORMAL)
+            self.topBtn.config(state=NORMAL)
+            self.yBtn.config(state=NORMAL)            
             self.tree.config(selectmode="browse")
             self.tl.destroy()
             # restore root close button function
@@ -335,6 +394,8 @@ class Library:
             root.protocol('WM_DELETE_WINDOW', lambda:0)
             self.addbtn.config(state=DISABLED)
             self.modbtn.config(state=DISABLED)
+            self.topBtn.config(state=DISABLED)
+            self.yBtn.config(state=DISABLED)            
             self.tree.config(selectmode="none")
         self.context_open = not self.context_open        
 
