@@ -1,10 +1,11 @@
 '''
 Application Library
 author: https://github.com/pdjan
-version 1.3
+version 1.4
 python: 3.7.4
+date: nov 2020
 '''
-# new to 1.3 - books by year
+# new in 1.4 - export to csv
 
 from tkinter import *
 from tkinter import ttk
@@ -47,9 +48,14 @@ class Library:
         self.topBtn = ttk.Button(leftFrame, text='Top 10', width=15, command=self.show_top10)
         self.topBtn.grid(row=3, column=0)
         
-        # new 1.3
         self.yBtn = ttk.Button(leftFrame, text="By Year", width=15, command = self.show_by_year)
         self.yBtn.grid(row=4, column=0, sticky=W+N)
+
+        self.exportlabel = Label(leftFrame, text='Export', fg='blue')
+        self.exportlabel.grid(row=5, column=0)
+
+        self.exportBtn = ttk.Button(leftFrame, text='To CSV', width=15, command=self.export_csv)
+        self.exportBtn.grid(row=6, column=0, sticky=W+N)
         
         rightFrame = Frame(width=150, height=600)
         rightFrame.grid(row=0, column=1, padx=0, pady=5)                
@@ -321,7 +327,6 @@ class Library:
         except IndexError as e:
             self.msg["text"] = "Error"
 
-    # new 1.3
     def show_by_year(self):
         '''
         This function opens window and displays books by year
@@ -374,7 +379,18 @@ class Library:
         except IndexError as e:
             self.msg["text"] = "Unknown Error occured!"
         
-    
+    def export_csv(self):
+        '''
+        This function exports treeview content to csv file
+        '''
+        # todo : add curr date string to file name 
+        with open('books.csv', mode='w', newline='', encoding='utf-8') as books_file:
+            b_writer = csv.writer(books_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            b_writer.writerow(['Author','Title','pages','date'])
+            for child in self.tree.get_children():
+                b_writer.writerow(self.tree.item(child)["values"])
+        self.msg["text"] = "List exported to books.csv"
+
 
     def config(self):
         '''
@@ -384,7 +400,8 @@ class Library:
             self.addbtn.config(state=NORMAL)
             self.modbtn.config(state=NORMAL)
             self.topBtn.config(state=NORMAL)
-            self.yBtn.config(state=NORMAL)            
+            self.yBtn.config(state=NORMAL)
+            self.exportBtn.config(state=NORMAL)
             self.tree.config(selectmode="browse")
             self.tl.destroy()
             # restore root close button function
@@ -395,7 +412,8 @@ class Library:
             self.addbtn.config(state=DISABLED)
             self.modbtn.config(state=DISABLED)
             self.topBtn.config(state=DISABLED)
-            self.yBtn.config(state=DISABLED)            
+            self.yBtn.config(state=DISABLED)
+            self.exportBtn.config(state=DISABLED)
             self.tree.config(selectmode="none")
         self.context_open = not self.context_open        
 
