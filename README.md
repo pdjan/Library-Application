@@ -5,6 +5,9 @@ Simple Python application for storing books data
 
 CHANGES
 
+v1.4
+Export to csv function added, button and label.
+
 v1.3
 Stats by year function added
 
