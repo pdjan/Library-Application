@@ -5,6 +5,9 @@ Simple Python application for storing books data
 
 CHANGES
 
+v1.5
+Show graph function added.
+
 v1.4
 Export to csv function added, button and label.
 
