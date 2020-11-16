@@ -1,11 +1,10 @@
 '''
 Application Library
 author: https://github.com/pdjan
-version 1.4
+version 1.5
 python: 3.7.4
 date: nov 2020
 '''
-# new in 1.4 - export to csv
 
 from tkinter import *
 from tkinter import ttk
@@ -13,6 +12,10 @@ from ttkthemes import ThemedStyle
 import sqlite3
 import os.path
 import csv
+
+from pandas import DataFrame
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class Library:
     def __init__(self, master):
@@ -51,11 +54,15 @@ class Library:
         self.yBtn = ttk.Button(leftFrame, text="By Year", width=15, command = self.show_by_year)
         self.yBtn.grid(row=4, column=0, sticky=W+N)
 
+        # new 1.5
+        self.graphBtn = ttk.Button(leftFrame, text="Show Graph", width=15, command = self.show_graph)
+        self.graphBtn.grid(row=5, column=0, sticky=W+N)
+
         self.exportlabel = Label(leftFrame, text='Export', fg='blue')
-        self.exportlabel.grid(row=5, column=0)
+        self.exportlabel.grid(row=6, column=0)
 
         self.exportBtn = ttk.Button(leftFrame, text='To CSV', width=15, command=self.export_csv)
-        self.exportBtn.grid(row=6, column=0, sticky=W+N)
+        self.exportBtn.grid(row=7, column=0, sticky=W+N)
         
         rightFrame = Frame(width=150, height=600)
         rightFrame.grid(row=0, column=1, padx=0, pady=5)                
@@ -391,6 +398,66 @@ class Library:
                 b_writer.writerow(self.tree.item(child)["values"])
         self.msg["text"] = "List exported to books.csv"
 
+    def show_graph(self):
+        '''
+        Function displays graph stats window
+        '''
+        try:
+            self.msg["text"] = ""
+            self.tl = Tk()
+            # Setting Theme
+            style = ThemedStyle(self.tl)
+            style.set_theme("plastik")
+            
+            self.tl.title("Stats graph")
+            # self.tl.resizable(False, False)
+            
+            # window position
+            x=root.winfo_rootx()+150
+            y=root.winfo_rooty()+50
+            self.tl.geometry('+%d+%d' % (x,y))
+
+            graphFrame = Frame(self.tl, bg="blue")
+            graphFrame.grid(row=0, column=0, sticky=E+W)
+
+            treedata = {}
+            treedata['Year'] = []
+            treedata['Pages'] = []
+            
+            for child in self.tree.get_children():
+                ch = self.tree.item(child)["values"]
+                ch_year = ch[3]
+                ch_year_final = ch_year[:4]
+
+                ch_pages = ch[2]
+
+                # insert year into list if not in it
+                if ch_year_final not in treedata['Year']:
+                    treedata['Year'].append(ch_year_final)
+                    treedata['Pages'].append(0)
+
+                # calculate and add pages
+                year_index = treedata['Year'].index(ch_year_final)
+                treedata['Pages'][year_index] += ch_pages
+                
+            df1 = DataFrame(treedata,columns=['Year','Pages'])
+
+            # place chart 
+            figure1 = plt.Figure(figsize=(6,5), dpi=100)
+            ax1 = figure1.add_subplot(111)
+            bar1 = FigureCanvasTkAgg(figure1, graphFrame)
+            # bar1.get_tk_widget().pack()
+            bar1.get_tk_widget().grid(row=0, column=0, sticky=E+W)
+            df1 = df1[['Year','Pages']].groupby('Year').sum()
+            df1.plot(kind='bar', legend=True, ax=ax1)
+            ax1.set_title('Pages per year')
+
+            self.config()
+            self.tl.protocol("WM_DELETE_WINDOW", self.config)
+            self.tl.mainloop()            
+            
+        except:
+            pass
 
     def config(self):
         '''
@@ -401,6 +468,7 @@ class Library:
             self.modbtn.config(state=NORMAL)
             self.topBtn.config(state=NORMAL)
             self.yBtn.config(state=NORMAL)
+            self.graphBtn.config(state=NORMAL)
             self.exportBtn.config(state=NORMAL)
             self.tree.config(selectmode="browse")
             self.tl.destroy()
@@ -413,6 +481,7 @@ class Library:
             self.modbtn.config(state=DISABLED)
             self.topBtn.config(state=DISABLED)
             self.yBtn.config(state=DISABLED)
+            self.graphBtn.config(state=DISABLED)
             self.exportBtn.config(state=DISABLED)
             self.tree.config(selectmode="none")
         self.context_open = not self.context_open        
