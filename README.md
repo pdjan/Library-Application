@@ -1,7 +1,7 @@
 # Library-Application
 Simple Python application for storing books data
 
-![image](https://github.com/pdjan/Library-Application/blob/master/LibraryApp1.3.png?raw=true)
+![image](https://github.com/pdjan/Library-Application/blob/master/Library1.6.png?raw=true)
 
 CHANGES
 
